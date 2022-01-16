@@ -1,7 +1,5 @@
-package com.example.dateformater
+package com.example.dateformatter
 
-import android.text.format.DateFormat
-import android.util.Log
 import org.joda.time.*
 import org.joda.time.chrono.GregorianChronology
 import org.joda.time.chrono.ISOChronology

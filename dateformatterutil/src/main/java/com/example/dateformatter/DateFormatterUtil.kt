@@ -10,10 +10,12 @@ import java.util.*
 
 /**
  * @usage this object has many methods to deal with date formats
+ * @rule  start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
  */
 object DateFormatterUtil {
     /**
      * @usage this function is used to parse string date to Date Object based on passed date format
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param from A String containing the date string
      * @param format A String represents the required format'
      * @return A Date value that represents the output date
@@ -22,7 +24,7 @@ object DateFormatterUtil {
         try {
             return dateParser.parser.parse(from)
         } catch (ex: ParseException){
-            print(ex.localizedMessage)
+            ex.stackTrace
         }
         return null
 
@@ -30,6 +32,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to format date of type Date to date String based on required date format
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param from A Date containing the date object
      * @param format A String represents the required format
      * @return A String value that represents the output date
@@ -44,6 +47,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to convert date of type Date to hijri date String
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param from A Date containing the date object
      * @return A LocalDate object that represents the hijri date
      */
@@ -90,6 +94,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to convert LocalDateTime object to date String
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param date A LocalDateTime containing the datetime object
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the date
@@ -100,6 +105,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to convert LocalDate object to hijri date String
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param localDate A LocalDate containing the date object
      * @param isIslamic A Boolean confirm that the date object
      * @return A Date that represents the localDate is islamic or normal date
@@ -126,7 +132,8 @@ object DateFormatterUtil {
     }
 
     /**
-     * @usage this function is used to convert date to hours and minutes based on UTC time zone
+     * @usage this function is used to convert date to hours and minutes based on UTC time zone(current time -2 hours)
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param dateString A String containing the date
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the hours and minutes
@@ -134,7 +141,6 @@ object DateFormatterUtil {
     fun convertDateToHoursMinUTC(
         dateString: String,
         dateParser: StandardDateParser
-       // dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss"
     ): String {
         val format = StandardDateParser.HH_MM.parser
         format.timeZone = TimeZone.getTimeZone("UTC")
@@ -228,18 +234,19 @@ object DateFormatterUtil {
     }
 
 }
+
 enum class StandardDateParser(var parser: SimpleDateFormat, val displayName: String) {
-    YYYY_MM_DD(SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH), "yyyy-MM-dd"),
-    YYYYMMDD(SimpleDateFormat("yyyyMMdd",Locale.ENGLISH), "yyyyMMdd"),
-    YYYY_MM_DD_HH_MM_SS(SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd HH:mm:ss"),
-    DD_MM_YYYY_HH_MM_SS(SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.ENGLISH), "dd.MM.yyyy HH:mm:ss"),
-    DD_MM_YYYY(SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH), "dd-MM-yyyy"),
-    HH_MM_A(SimpleDateFormat("hh:mm a",Locale.ENGLISH), "hh:mm a"),
-    DD_MMMM(SimpleDateFormat("dd MMMM",Locale.ENGLISH), "dd MMMM"),
-    HH_MM(SimpleDateFormat("HH:mm",Locale.ENGLISH), "HH:mm"),
-    YYYY_MM_DDTHH_MM_SSZ(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ssZ"),
-    YYYY_MM_DDTHH_MM_SS(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ss"),
-    YYYY_MM_DDTHH_MM_SS_A(SimpleDateFormat("yyyy/MM/dd - hh:mm:ss a",Locale.ENGLISH), "yyyy/MM/dd - hh:mm:ss a");
+    YYYY_MM_DD(SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH), "yyyy-MM-dd"), // ex.2001.07.04
+    YYYY_MM_DD_HH_MM_SS(SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd HH:mm:ss"),//ex. 2001-07-04 12:08:56
+    DD_MM_YYYY_HH_MM_SS(SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.ENGLISH), "dd.MM.yyyy HH:mm:ss"),//ex. 04.07.2021 12:08:56
+    DD_MM_YYYY(SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH), "dd-MM-yyyy"),//ex. 20-12-2021
+    HH_MM_A(SimpleDateFormat("hh:mm a",Locale.ENGLISH), "hh:mm a"),//a for AM or PM ex. 12:24 AM
+    HH_MM(SimpleDateFormat("HH:mm",Locale.ENGLISH), "HH:mm"),//ex. 12:24
+    DD_MMMM(SimpleDateFormat("dd MMMM",Locale.ENGLISH), "dd MMMM"),//ex. 04 July
+    YYYY_MM_DDTHH_MM_SSZ(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ssz"),//z for	General time zone example Pacific Standard Time; PST; GMT-08:00
+   // Z for RFC 822 time zone example	-0800  example for Z : 2001-07-04T12:08:56 -0700 / example for z : 2001-07-04T12:08:56 GMT or PDT
+    YYYY_MM_DDTHH_MM_SS(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ss"),// ex. 2001-07-04T12:08:56
+    YYYY_MM_DDTHH_MM_SS_A(SimpleDateFormat("yyyy/MM/dd - hh:mm:ss a",Locale.ENGLISH), "yyyy/MM/dd - hh:mm:ss a");// ex. 2001/07/04 - 12:08:56 AM
 
     override fun toString(): String {
         return displayName

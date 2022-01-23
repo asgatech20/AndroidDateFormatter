@@ -1,6 +1,5 @@
 package com.example.dateformatter
 
-import android.icu.util.LocaleData
 import org.joda.time.*
 import org.joda.time.chrono.GregorianChronology
 import org.joda.time.chrono.ISOChronology
@@ -8,9 +7,10 @@ import org.joda.time.chrono.IslamicChronology
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+
 /**
  * @usage this object has many methods to deal with date formats
-*/
+ */
 object DateFormatterUtil {
     /**
      * @usage this function is used to parse string date to Date Object based on passed date format
@@ -18,24 +18,25 @@ object DateFormatterUtil {
      * @param format A String represents the required format'
      * @return A Date value that represents the output date
      */
-    fun convertStringToDate(from: String, format: String): Date? {
+    fun convertStringToDate(from: String, dateParser: StandardDateParser): Date? {
         try {
-            return SimpleDateFormat(format).parse(from)
-        } catch (ex: ParseException) {
-            print(ex.printStackTrace())
+            return dateParser.parser.parse(from)
+        } catch (ex: ParseException){
+            print(ex.localizedMessage)
         }
         return null
 
     }
+
     /**
      * @usage this function is used to format date of type Date to date String based on required date format
      * @param from A Date containing the date object
      * @param format A String represents the required format
      * @return A String value that represents the output date
      */
-    fun convertDateToString(from: Date, format: String): String {
+    fun convertDateToString(from: Date, dateParser: StandardDateParser): String {
         return try {
-            SimpleDateFormat(format).format(from)
+            dateParser.parser.format(from)
         } catch (e: ParseException) {
             e.localizedMessage
         }
@@ -61,12 +62,13 @@ object DateFormatterUtil {
         }
         return null
     }
+
     /**
      * @usage this fun is used to init Today Iso from calender obj
      * @param calendar Calendar object indicates date
      * @return LocalDate object
      */
-    fun initTodayIso(calendar:Calendar):LocalDate{
+    fun initTodayIso(calendar: Calendar): LocalDate {
         val iso: Chronology = GregorianChronology.getInstance()
         return LocalDate(
             calendar[Calendar.YEAR],
@@ -88,11 +90,12 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to convert LocalDateTime object to date String
-     * @param from A LocalDateTime containing the datetime object
+     * @param date A LocalDateTime containing the datetime object
+     * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the date
      */
-    fun convert(date: LocalDateTime, format: String): String {
-        return date.toString(format)
+    fun convert(date: LocalDateTime, dateParser: StandardDateParser): String {
+        return date.toString(dateParser.name)
     }
 
     /**
@@ -110,59 +113,73 @@ object DateFormatterUtil {
             localDate.toDate()
         }
     }
+
     /**
      * @usage this function is used to init local date based on UTC time zone
      * @param localDate A LocalDate object containing the date
      * @return  LocalDate with UTC time Zone
      */
-    fun initDateTimeIso(localDate: LocalDate):LocalDate{
+    fun initDateTimeIso(localDate: LocalDate): LocalDate {
         val iso: Chronology = ISOChronology.getInstanceUTC()
-        return localDate.toDateTimeAtStartOfDay(DateTimeZone.UTC)
+        return localDate.plusDays(-1).toDateTimeAtStartOfDay(DateTimeZone.UTC)
             .withChronology(iso).toLocalDate()
     }
+
     /**
      * @usage this function is used to convert date to hours and minutes based on UTC time zone
-     * @param date A String containing the date
+     * @param dateString A String containing the date
+     * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the hours and minutes
      */
-    fun convertDateToHoursMinUTC(dateString: String,dateFormat: String="yyyy-MM-dd'T'HH:mm:ss"): String {
-        val format = SimpleDateFormat("HH:mm")
+    fun convertDateToHoursMinUTC(
+        dateString: String,
+        dateParser: StandardDateParser
+       // dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss"
+    ): String {
+        val format = StandardDateParser.HH_MM.parser
         format.timeZone = TimeZone.getTimeZone("UTC")
-        val sdf = SimpleDateFormat(dateFormat)
         var d: Date? = null
         try {
-            d = sdf.parse(dateString)
+            d = dateParser.parser.parse(dateString)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
         return format.format(d)
     }
+
     /**
      * @usage this function is used to convert date string to days and months
      * @param date A String containing the date
+     * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the days and months
      */
-    fun convertDateToDateDaysMonthsUTC(date: String,dateFormat: String="yyyy-MM-dd'T'HH:mm:ss"): String {
-        val format = SimpleDateFormat("dd MMMM")
+    fun convertDateToDateDaysMonthsUTC(
+        date: String,
+        dateParser: StandardDateParser
+        //dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss"
+    ): String {
+        val format = StandardDateParser.DD_MMMM.parser
         format.timeZone = TimeZone.getTimeZone("UTC")
-        val sdf = SimpleDateFormat(dateFormat)
+        //val sdf = SimpleDateFormat(dateFormat)
         var d: Date? = null
         try {
-            d = sdf.parse(date)
+            d = dateParser.parser.parse(date)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
         return format.format(d)
     }
+
     /**
      * @usage this function is used to check to-date is after from-date
      * @param fromDate A String containing the start date
      * @param toDate A String containing the end date
      * @return A Boolean that indicates the end date is after start or not
      */
-    fun isFutureDate(fromDate: String , toDate: String): Boolean {
+    fun isFutureDate(fromDate: String, toDate: String): Boolean {
         return Date(toDate).after(Date(fromDate))
     }
+
     /**
      * @usage this function is used to split hours and min from time based on am and pm
      * @param time A String containing the date
@@ -177,37 +194,55 @@ object DateFormatterUtil {
         }
         return "invalid input"
     }
+
     /**
      * @usage this function is used to get current date
-     * @param format A String that represents required format
+     * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the current date
      */
-    fun getCurrentData(format:String): String {
+    fun getCurrentData(dateParser: StandardDateParser): String {
         val c = Calendar.getInstance().time
-        val df = SimpleDateFormat(format, Locale.ENGLISH)
-        return df.format(c)
+        return dateParser.parser.format(c)
     }
+
     /**
      * @usage this function is used to get time from date String
      * @param georgianDate A String containing the date
-     * @param dateFormat A String containing the format of input date
+     * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * valid patterns : "yyyy/MM/dd - hh:mm:ss a" or "yyyy-MM-dd'T'HH:mm:ss"
      * @return A String that represents the sec of given date
      */
-    fun getHoursMinFromDate(georgianDate: String,dateFormat:String): String{
+    fun getHoursMinFromDate(georgianDate: String, dateParser: StandardDateParser): String {
+
         try {
             val calendar = Calendar.getInstance()
-            val df: java.text.DateFormat =
-                SimpleDateFormat(dateFormat, Locale.ENGLISH)
-            val dateLong = df.parse(georgianDate).time
-            val formatter = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+            val dateLong = dateParser.parser.parse(georgianDate).time
+
             calendar.timeInMillis = dateLong
-            return formatter.format(calendar.time)
+            return StandardDateParser.HH_MM_A.parser.format(calendar.time)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
+
         return ""
     }
 
 }
+enum class StandardDateParser(var parser: SimpleDateFormat, val displayName: String) {
+    YYYY_MM_DD(SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH), "yyyy-MM-dd"),
+    YYYYMMDD(SimpleDateFormat("yyyyMMdd",Locale.ENGLISH), "yyyyMMdd"),
+    YYYY_MM_DD_HH_MM_SS(SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd HH:mm:ss"),
+    DD_MM_YYYY_HH_MM_SS(SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.ENGLISH), "dd.MM.yyyy HH:mm:ss"),
+    DD_MM_YYYY(SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH), "dd-MM-yyyy"),
+    HH_MM_A(SimpleDateFormat("hh:mm a",Locale.ENGLISH), "hh:mm a"),
+    DD_MMMM(SimpleDateFormat("dd MMMM",Locale.ENGLISH), "dd MMMM"),
+    HH_MM(SimpleDateFormat("HH:mm",Locale.ENGLISH), "HH:mm"),
+    YYYY_MM_DDTHH_MM_SSZ(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ssZ"),
+    YYYY_MM_DDTHH_MM_SS(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ss"),
+    YYYY_MM_DDTHH_MM_SS_A(SimpleDateFormat("yyyy/MM/dd - hh:mm:ss a",Locale.ENGLISH), "yyyy/MM/dd - hh:mm:ss a");
 
+    override fun toString(): String {
+        return displayName
+    }
+
+}

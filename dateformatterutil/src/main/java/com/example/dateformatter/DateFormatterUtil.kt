@@ -37,7 +37,7 @@ object DateFormatterUtil {
      * @param format A String represents the required format
      * @return A String value that represents the output date
      */
-    fun convertDateToString(from: Date, dateParser: StandardDateParser): String {
+    fun convertDateToString(from: Date?, dateParser: StandardDateParser): String {
         return try {
             dateParser.parser.format(from)
         } catch (e: ParseException) {
@@ -72,7 +72,7 @@ object DateFormatterUtil {
      * @param calendar Calendar object indicates date
      * @return LocalDate object
      */
-    fun initTodayIso(calendar: Calendar): LocalDate {
+    private fun initTodayIso(calendar: Calendar): LocalDate {
         val iso: Chronology = GregorianChronology.getInstance()
         return LocalDate(
             calendar[Calendar.YEAR],
@@ -125,7 +125,7 @@ object DateFormatterUtil {
      * @param localDate A LocalDate object containing the date
      * @return  LocalDate with UTC time Zone
      */
-    fun initDateTimeIso(localDate: LocalDate): LocalDate {
+    private fun initDateTimeIso(localDate: LocalDate): LocalDate {
         val iso: Chronology = ISOChronology.getInstanceUTC()
         return localDate.plusDays(-1).toDateTimeAtStartOfDay(DateTimeZone.UTC)
             .withChronology(iso).toLocalDate()
@@ -134,50 +134,48 @@ object DateFormatterUtil {
     /**
      * @usage this function is used to convert date to hours and minutes based on UTC time zone(current time -2 hours)
      * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
+     * if you don't pass value for time value will be zero
      * @param dateString A String containing the date
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the hours and minutes
      */
-    fun convertDateToHoursMinUTC(
+    fun convertDateToHoursMin(
         dateString: String,
         dateParser: StandardDateParser
     ): String {
-        val format = StandardDateParser.HH_MM.parser
-        format.timeZone = TimeZone.getTimeZone("UTC")
         var d: Date? = null
         try {
-            d = dateParser.parser.parse(dateString)
+            d = convertStringToDate(dateString,dateParser)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
-        return format.format(d)
+        return convertDateToString(d,StandardDateParser.HH_MM)
     }
 
     /**
      * @usage this function is used to convert date string to days and months
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param date A String containing the date
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the days and months
      */
-    fun convertDateToDateDaysMonthsUTC(
+    fun convertDateToDateDaysMonths(
         date: String,
         dateParser: StandardDateParser
-        //dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss"
     ): String {
-        val format = StandardDateParser.DD_MMMM.parser
-        format.timeZone = TimeZone.getTimeZone("UTC")
-        //val sdf = SimpleDateFormat(dateFormat)
         var d: Date? = null
         try {
-            d = dateParser.parser.parse(date)
+            d = convertStringToDate(date,dateParser)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
-        return format.format(d)
+        return convertDateToString(d,StandardDateParser.DD_MMMM)
     }
 
     /**
      * @usage this function is used to check to-date is after from-date
+     * @acceptedFormats all date or date-time formats in StandardDateParser enum class if you enter invalid value for entered pattern it will
+     * throw exception or if you pass time only it will throw IllegalArgumentException
      * @param fromDate A String containing the start date
      * @param toDate A String containing the end date
      * @return A Boolean that indicates the end date is after start or not
@@ -188,6 +186,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to split hours and min from time based on am and pm
+     * @acceptedFormat HH:MM:ss AM/PM
      * @param time A String containing the date
      * @return A String that contains hh:min am/pm
      */
@@ -196,13 +195,14 @@ object DateFormatterUtil {
             val h1 = time.split(":".toRegex()).toTypedArray()
             val hour = h1[0]
             val minute = h1[1]
-            return if (time.contains("PM")) "$hour:$minute PM" else "$hour:$minute AM"
+            return if (hour.toInt() in 13..23 || time.contains("PM")) "$hour:$minute PM" else "$hour:$minute AM"
         }
-        return "invalid input"
+        return "invalid input , you should use HH:MM:ss AM/PM for example: 12:24"
     }
 
     /**
      * @usage this function is used to get current date
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the current date
      */
@@ -213,6 +213,7 @@ object DateFormatterUtil {
 
     /**
      * @usage this function is used to get time from date String
+     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param georgianDate A String containing the date
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * valid patterns : "yyyy/MM/dd - hh:mm:ss a" or "yyyy-MM-dd'T'HH:mm:ss"
@@ -221,11 +222,13 @@ object DateFormatterUtil {
     fun getHoursMinFromDate(georgianDate: String, dateParser: StandardDateParser): String {
 
         try {
-            val calendar = Calendar.getInstance()
+            val date = convertStringToDate(georgianDate,dateParser)
+            val result = convertDateToString(date,StandardDateParser.HH_MM_A)
+            /*val calendar = Calendar.getInstance()
             val dateLong = dateParser.parser.parse(georgianDate).time
 
-            calendar.timeInMillis = dateLong
-            return StandardDateParser.HH_MM_A.parser.format(calendar.time)
+            calendar.timeInMillis = dateLong*/
+            return result//StandardDateParser.HH_MM_A.parser.format(calendar.time)
         } catch (e: ParseException) {
             e.printStackTrace()
         }
@@ -236,14 +239,13 @@ object DateFormatterUtil {
 }
 
 enum class StandardDateParser(var parser: SimpleDateFormat, val displayName: String) {
-    YYYY_MM_DD(SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH), "yyyy-MM-dd"), // ex.2001.07.04
+    YYYY_MM_DD(SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH), "yyyy-MM-dd"), // ex.2001-07-04
     YYYY_MM_DD_HH_MM_SS(SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd HH:mm:ss"),//ex. 2001-07-04 12:08:56
     DD_MM_YYYY_HH_MM_SS(SimpleDateFormat("dd.MM.yyyy HH:mm:ss",Locale.ENGLISH), "dd.MM.yyyy HH:mm:ss"),//ex. 04.07.2021 12:08:56
     DD_MM_YYYY(SimpleDateFormat("dd-MM-yyyy",Locale.ENGLISH), "dd-MM-yyyy"),//ex. 20-12-2021
     HH_MM_A(SimpleDateFormat("hh:mm a",Locale.ENGLISH), "hh:mm a"),//a for AM or PM ex. 12:24 AM
     HH_MM(SimpleDateFormat("HH:mm",Locale.ENGLISH), "HH:mm"),//ex. 12:24
     DD_MMMM(SimpleDateFormat("dd MMMM",Locale.ENGLISH), "dd MMMM"),//ex. 04 July
-    YYYY_MM_DDTHH_MM_SSZ(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssz",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ssz"),//z for	General time zone example Pacific Standard Time; PST; GMT-08:00
    // Z for RFC 822 time zone example	-0800  example for Z : 2001-07-04T12:08:56 -0700 / example for z : 2001-07-04T12:08:56 GMT or PDT
     YYYY_MM_DDTHH_MM_SS(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",Locale.ENGLISH), "yyyy-MM-dd'T'HH:mm:ss"),// ex. 2001-07-04T12:08:56
     YYYY_MM_DDTHH_MM_SS_A(SimpleDateFormat("yyyy/MM/dd - hh:mm:ss a",Locale.ENGLISH), "yyyy/MM/dd - hh:mm:ss a");// ex. 2001/07/04 - 12:08:56 AM

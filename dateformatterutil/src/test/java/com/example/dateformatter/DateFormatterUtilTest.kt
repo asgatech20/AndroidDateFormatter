@@ -5,22 +5,21 @@ import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.tz.UTCProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
-import java.util.logging.SimpleFormatter
-import kotlin.time.ExperimentalTime
-import kotlin.time.minutes
+import java.util.*
 
 
 class DateFormatterUtilTest {
 
     @Before
-    fun init() {
-        //this line solve the problem : ZoneInfoMap not found
+    fun init(){
         DateTimeZone.setProvider(UTCProvider())
     }
 
-    @ExperimentalTime
+
+
     @Test
     fun convertStringToDate_return_valid_day_month_year_when_passing_valid_param() {
         //value returned is subtraction of 1900 according to documentation
@@ -41,14 +40,6 @@ class DateFormatterUtilTest {
                 "20:25",
                 StandardDateParser.HH_MM
             )?.year!! + 1900, 1970
-        )
-        //value returned passed on enum in documentation
-        assertEquals(
-            DateFormatterUtil.convertStringToDate(
-                "2001-07-04T10:08:56 GMT",
-                StandardDateParser.YYYY_MM_DDTHH_MM_SSZ
-            )?.day!!// The returned value (0 = Sunday, 1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday)
-            , 3
         )
         //value returned starts from 0 which represents january
         assertEquals(
@@ -91,6 +82,7 @@ class DateFormatterUtilTest {
 
     @Test
     fun convertToHijriDate() {
+
         val date1 = DateFormatterUtil.convertStringToDate(
                 "12.01.2022 01:32:27",
                 StandardDateParser.DD_MM_YYYY_HH_MM_SS
@@ -194,22 +186,23 @@ class DateFormatterUtilTest {
     }
 
     @Test
-    fun convertDateToHoursMinUTC() {
+    fun convertDateToHoursMin() {
+
         assertEquals(
-            "10:17",
-            DateFormatterUtil.convertDateToHoursMinUTC("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
+            "00:00",
+            DateFormatterUtil.convertDateToHoursMin("08 July",StandardDateParser.DD_MMMM)
         )
         assertEquals(
-            "12:08",
-            DateFormatterUtil.convertDateToHoursMinUTC("2001-07-04T12:08:56 GMT",StandardDateParser.YYYY_MM_DDTHH_MM_SSZ)
+            "12:17",
+            DateFormatterUtil.convertDateToHoursMin("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
         )
         assertEquals(
-            "21:00",
-            DateFormatterUtil.convertDateToHoursMinUTC("08 July",StandardDateParser.DD_MMMM)
+            "00:00",
+            DateFormatterUtil.convertDateToHoursMin("08 July",StandardDateParser.DD_MMMM)
         )
         assertEquals(
-            "21:08",
-            DateFormatterUtil.convertDateToHoursMinUTC("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A)
+            "00:08",
+            DateFormatterUtil.convertDateToHoursMin("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A)
         )
     }
 
@@ -217,23 +210,39 @@ class DateFormatterUtilTest {
     fun convertDateToDateDaysMonthsUTC() {
         assertEquals(
             "13 January",
-            DateFormatterUtil.convertDateToDateDaysMonthsUTC("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
+            DateFormatterUtil.convertDateToDateDaysMonths("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
         )
+        assertEquals(
+            "04 July",
+            DateFormatterUtil.convertDateToDateDaysMonths("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A)
+        )
+        assertEquals(
+            "01 January",
+            DateFormatterUtil.convertDateToDateDaysMonths("12:17",StandardDateParser.HH_MM)
+        )
+
     }
 
     @Test
     fun compareDates() {
+
         assertEquals(
             true,
-            DateFormatterUtil.isFutureDate("2022/01/13", "2022/01/14")
+            DateFormatterUtil.isFutureDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
         )
+
+        // java.lang.IllegalArgumentException
+//        assertEquals(
+//            true,
+//            DateFormatterUtil.isFutureDate("12:08", "01:12")
+//        )
     }
 
     @Test
     fun getDatFromPmAmHoursMin() {
         assertEquals(
             "22:17 PM",
-            DateFormatterUtil.getHoursMinFromTime("22:17:00 PM")
+            DateFormatterUtil.getHoursMinFromTime("22:17")
         )
         assertEquals(
             "02:17 AM",
@@ -243,14 +252,22 @@ class DateFormatterUtilTest {
 
     @Test
     fun getCurrentDate() {
-        assertEquals("23-01-2022", DateFormatterUtil.getCurrentData(StandardDateParser.DD_MM_YYYY))
+        assertEquals("2022-01-24", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
     }
 
     @Test
     fun convertTimeFromMillSecondToSecond() {
+        assertNotEquals(
+            "02:00 AM",
+            DateFormatterUtil.getHoursMinFromDate("2001-07-04", StandardDateParser.YYYY_MM_DD)
+        )
         assertEquals(
-            "09:45 AM",
-            DateFormatterUtil.getHoursMinFromDate("2012-10-01T09:45:00", StandardDateParser.YYYY_MM_DDTHH_MM_SS)
+            "12:00 AM",
+            DateFormatterUtil.getHoursMinFromDate("04 July", StandardDateParser.DD_MMMM)
+        )
+        assertEquals(
+            "12:24 AM",
+            DateFormatterUtil.getHoursMinFromDate("12:24 AM", StandardDateParser.HH_MM_A)
         )
         assertEquals(
             "09:45 AM",

@@ -171,7 +171,7 @@ class DateFormatterUtilTest {
         val hijri1 = DateFormatterUtil.convertToHijriDate(date1!!)
         assertEquals(
             LocalDate("1970-01-01").toDate(),
-            DateFormatterUtil.convertFromIslamic(hijri1!!, true)
+            DateFormatterUtil.convertFromIslamic(hijri1!!)
         )
         val date = DateFormatterUtil.convertStringToDate(
             "12-01-2022",
@@ -181,48 +181,10 @@ class DateFormatterUtilTest {
         val hijri = DateFormatterUtil.convertToHijriDate(date!!)
         assertEquals(
             LocalDate("2022-01-12").toDate(),
-            DateFormatterUtil.convertFromIslamic(hijri!!, true)
-        )
-    }
-
-    @Test
-    fun convertDateToHoursMin() {
-
-        assertEquals(
-            "00:00",
-            DateFormatterUtil.convertDateToHoursMin("08 July",StandardDateParser.DD_MMMM)
-        )
-        assertEquals(
-            "12:17",
-            DateFormatterUtil.convertDateToHoursMin("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
-        )
-        assertEquals(
-            "00:00",
-            DateFormatterUtil.convertDateToHoursMin("08 July",StandardDateParser.DD_MMMM)
-        )
-        assertEquals(
-            "00:08",
-            DateFormatterUtil.convertDateToHoursMin("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A)
-        )
-    }
-
-    @Test
-    fun convertDateToDateDaysMonthsUTC() {
-        assertEquals(
-            "13 January",
-            DateFormatterUtil.convertDateToDateDaysMonths("2022-01-13T12:17:00",StandardDateParser.YYYY_MM_DDTHH_MM_SS)
-        )
-        assertEquals(
-            "04 July",
-            DateFormatterUtil.convertDateToDateDaysMonths("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A)
-        )
-        assertEquals(
-            "01 January",
-            DateFormatterUtil.convertDateToDateDaysMonths("12:17",StandardDateParser.HH_MM)
+            DateFormatterUtil.convertFromIslamic(hijri!!)
         )
 
     }
-
     @Test
     fun compareDates() {
 
@@ -255,35 +217,5 @@ class DateFormatterUtilTest {
         assertEquals("2022-01-24", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
     }
 
-    @Test
-    fun convertTimeFromMillSecondToSecond() {
-        assertNotEquals(
-            "02:00 AM",
-            DateFormatterUtil.getHoursMinFromDate("2001-07-04", StandardDateParser.YYYY_MM_DD)
-        )
-        assertEquals(
-            "12:00 AM",
-            DateFormatterUtil.getHoursMinFromDate("04 July", StandardDateParser.DD_MMMM)
-        )
-        assertEquals(
-            "12:24 AM",
-            DateFormatterUtil.getHoursMinFromDate("12:24 AM", StandardDateParser.HH_MM_A)
-        )
-        assertEquals(
-            "09:45 AM",
-            DateFormatterUtil.getHoursMinFromDate(
-                "2012-10-01  09:45:00 AM",
-                StandardDateParser.YYYY_MM_DD_HH_MM_SS
-            )
-        )
-        assertEquals(
-            "09:45 AM",
-            DateFormatterUtil.getHoursMinFromDate(
-                "2012-10-01T09:45:00",
-                StandardDateParser.YYYY_MM_DDTHH_MM_SS
-            )
-        )
-
-    }
 
 }

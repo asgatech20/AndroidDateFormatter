@@ -17,7 +17,7 @@ object DateFormatterUtil {
      * @usage this function is used to parse string date to Date Object based on passed date format
      * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param from A String containing the date string
-     * @param format A String represents the required format'
+     * @param dateParser A enum class represents the all valid formats
      * @return A Date value that represents the output date
      */
     fun convertStringToDate(from: String, dateParser: StandardDateParser): Date? {
@@ -34,7 +34,7 @@ object DateFormatterUtil {
      * @usage this function is used to format date of type Date to date String based on required date format
      * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param from A Date containing the date object
-     * @param format A String represents the required format
+     * @param dateParser A enum class represents the all valid formats
      * @return A String value that represents the output date
      */
     fun convertDateToString(from: Date?, dateParser: StandardDateParser): String {
@@ -107,17 +107,11 @@ object DateFormatterUtil {
      * @usage this function is used to convert LocalDate object to hijri date String
      * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
      * @param localDate A LocalDate containing the date object
-     * @param isIslamic A Boolean confirm that the date object
      * @return A Date that represents the localDate is islamic or normal date
      */
-    fun convertFromIslamic(localDate: LocalDate, isIslamic: Boolean): Date? {
-        return if (isIslamic) {
+    fun convertFromIslamic(localDate: LocalDate): Date? {
             val dtIso = initDateTimeIso(localDate)
-            println("hijri-to-gregorian: $localDate=>$dtIso")
-            dtIso.toDate()
-        } else {
-            localDate.toDate()
-        }
+            return dtIso.toDate()
     }
 
     /**
@@ -129,47 +123,6 @@ object DateFormatterUtil {
         val iso: Chronology = ISOChronology.getInstanceUTC()
         return localDate.plusDays(-1).toDateTimeAtStartOfDay(DateTimeZone.UTC)
             .withChronology(iso).toLocalDate()
-    }
-
-    /**
-     * @usage this function is used to convert date to hours and minutes based on UTC time zone(current time -2 hours)
-     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
-     * if you don't pass value for time value will be zero
-     * @param dateString A String containing the date
-     * @param dateParser A StandardDateParser enum class contain all valid date and time format
-     * @return A String that represents the hours and minutes
-     */
-    fun convertDateToHoursMin(
-        dateString: String,
-        dateParser: StandardDateParser
-    ): String {
-        var d: Date? = null
-        try {
-            d = convertStringToDate(dateString,dateParser)
-        } catch (e: ParseException) {
-            e.printStackTrace()
-        }
-        return convertDateToString(d,StandardDateParser.HH_MM)
-    }
-
-    /**
-     * @usage this function is used to convert date string to days and months
-     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
-     * @param date A String containing the date
-     * @param dateParser A StandardDateParser enum class contain all valid date and time format
-     * @return A String that represents the days and months
-     */
-    fun convertDateToDateDaysMonths(
-        date: String,
-        dateParser: StandardDateParser
-    ): String {
-        var d: Date? = null
-        try {
-            d = convertStringToDate(date,dateParser)
-        } catch (e: ParseException) {
-            e.printStackTrace()
-        }
-        return convertDateToString(d,StandardDateParser.DD_MMMM)
     }
 
     /**
@@ -209,31 +162,6 @@ object DateFormatterUtil {
     fun getCurrentData(dateParser: StandardDateParser): String {
         val c = Calendar.getInstance().time
         return dateParser.parser.format(c)
-    }
-
-    /**
-     * @usage this function is used to get time from date String
-     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
-     * @param georgianDate A String containing the date
-     * @param dateParser A StandardDateParser enum class contain all valid date and time format
-     * valid patterns : "yyyy/MM/dd - hh:mm:ss a" or "yyyy-MM-dd'T'HH:mm:ss"
-     * @return A String that represents the sec of given date
-     */
-    fun getHoursMinFromDate(georgianDate: String, dateParser: StandardDateParser): String {
-
-        try {
-            val date = convertStringToDate(georgianDate,dateParser)
-            val result = convertDateToString(date,StandardDateParser.HH_MM_A)
-            /*val calendar = Calendar.getInstance()
-            val dateLong = dateParser.parser.parse(georgianDate).time
-
-            calendar.timeInMillis = dateLong*/
-            return result//StandardDateParser.HH_MM_A.parser.format(calendar.time)
-        } catch (e: ParseException) {
-            e.printStackTrace()
-        }
-
-        return ""
     }
 
 }

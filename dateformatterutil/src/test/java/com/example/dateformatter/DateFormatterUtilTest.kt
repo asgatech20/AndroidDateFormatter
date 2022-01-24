@@ -25,12 +25,6 @@ class DateFormatterUtilTest {
         //value returned is subtraction of 1900 according to documentation
         assertEquals(
             DateFormatterUtil.convertStringToDate(
-                "01.02.2022 01:25:27",
-                StandardDateParser.DD_MM_YYYY_HH_MM_SS
-            )?.year!! + 1900, 2022
-        )
-        assertEquals(
-            DateFormatterUtil.convertStringToDate(
                 "20 july",
                 StandardDateParser.DD_MMMM
             )?.month!!+1, 7

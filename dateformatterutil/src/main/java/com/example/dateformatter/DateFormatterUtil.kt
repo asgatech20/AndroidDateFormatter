@@ -1,9 +1,11 @@
 package com.example.dateformatter
 
+import com.example.dateformatter.DateFormatterUtil.convertFromIslamic
 import org.joda.time.*
 import org.joda.time.chrono.GregorianChronology
 import org.joda.time.chrono.ISOChronology
 import org.joda.time.chrono.IslamicChronology
+import java.lang.Exception
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,7 +26,7 @@ object DateFormatterUtil {
         try {
             return dateParser.parser.parse(from)
         } catch (ex: ParseException){
-            ex.stackTrace
+            ExceptionLogger.Error(ex.localizedMessage,ex)
         }
         return null
 
@@ -40,8 +42,9 @@ object DateFormatterUtil {
     fun convertDateToString(from: Date?, dateParser: StandardDateParser): String {
         return try {
             dateParser.parser.format(from)
-        } catch (e: ParseException) {
-            e.localizedMessage
+        } catch (ex: ParseException) {
+            ExceptionLogger.Error(ex.localizedMessage,ex)
+            ""
         }
     }
 
@@ -61,8 +64,9 @@ object DateFormatterUtil {
                 hijri
             )
             return todayHijri
-        } catch (e: ParseException) {
-            e.printStackTrace()
+        } catch (ex: ParseException) {
+            ExceptionLogger.Error(ex.localizedMessage,ex)
+            ""
         }
         return null
     }
@@ -100,18 +104,28 @@ object DateFormatterUtil {
      * @return A String that represents the date
      */
     fun convert(date: LocalDateTime, dateParser: StandardDateParser): String {
-        return date.toString(dateParser.name)
+        return try {
+            date.toString(dateParser.name)
+        }catch (ex:Exception){
+            ExceptionLogger.Error(ex.localizedMessage,ex)
+            ""
+        }
     }
 
     /**
-     * @usage this function is used to convert LocalDate object to hijri date String
+     * @usage this function is used to convert hijri local date object to date String
      * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
-     * @param localDate A LocalDate containing the date object
-     * @return A Date that represents the localDate is islamic or normal date
+     * @param localDate A LocalDate containing the hijri date object
+     * @return A Date that represents the date
      */
     fun convertFromIslamic(localDate: LocalDate): Date? {
+       return try {
             val dtIso = initDateTimeIso(localDate)
-            return dtIso.toDate()
+            dtIso.toDate()
+        }catch (ex:IllegalArgumentException){
+            ExceptionLogger.Error("invalid format",ex)
+            null
+        }
     }
 
     /**
@@ -121,7 +135,7 @@ object DateFormatterUtil {
      */
     private fun initDateTimeIso(localDate: LocalDate): LocalDate {
         val iso: Chronology = ISOChronology.getInstanceUTC()
-        return localDate.plusDays(-1).toDateTimeAtStartOfDay(DateTimeZone.UTC)
+        return localDate.minusDays(1).toDateTimeAtStartOfDay(DateTimeZone.UTC)
             .withChronology(iso).toLocalDate()
     }
 
@@ -134,7 +148,12 @@ object DateFormatterUtil {
      * @return A Boolean that indicates the end date is after start or not
      */
     fun isFutureDate(fromDate: String, toDate: String): Boolean {
-        return Date(toDate).after(Date(fromDate))
+        return try {
+            Date(toDate).after(Date(fromDate))
+        } catch (ex:IllegalArgumentException){
+            ExceptionLogger.Error("check your input dates",ex)
+            false
+        }
     }
 
     /**
@@ -144,18 +163,21 @@ object DateFormatterUtil {
      * @return A String that contains hh:min am/pm
      */
     fun getHoursMinFromTime(time: String): String {
-        if (time.contains(":")) {
+        try {
             val h1 = time.split(":".toRegex()).toTypedArray()
             val hour = h1[0]
             val minute = h1[1]
             return if (hour.toInt() in 13..23 || time.contains("PM")) "$hour:$minute PM" else "$hour:$minute AM"
+        }catch (ex:ArrayIndexOutOfBoundsException){
+            ExceptionLogger.Error("invalid input , you should use HH:MM:ss AM/PM for example: 12:24",ex)
         }
-        return "invalid input , you should use HH:MM:ss AM/PM for example: 12:24"
+
+        return ""
     }
 
     /**
      * @usage this function is used to get current date
-     * @acceptedFormats all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
+     * @acceptedFormats all formats in StandardDateParser enum class
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the current date
      */
@@ -182,4 +204,7 @@ enum class StandardDateParser(var parser: SimpleDateFormat, val displayName: Str
         return displayName
     }
 
+}
+fun main(){
+    convertFromIslamic(LocalDate("21-2-2023"))
 }

@@ -176,7 +176,7 @@ val date = DateFormatterUtil.convertStringToDate(
 <details>
 <summary><strong>Running Tests</strong></summary>
 
-Running and reviewing unit tests is a great way to get familiarized with this class and its methods. You can find [DateFormatterUtilTest.kt](DateFormatterUtilTest.kt)
+Running and reviewing unit tests is a great way to get familiarized with this class and its methods. You can find [DateFormatterUtilTest.kt](https://github.com/asgatech20/AndroidDateFormatter/blob/development/dateformatterutil/src/test/java/com/example/dateformatter/DateFormatterUtilTest.kt)
  which contains all valid and invalid test cases for every function
 
 </details>

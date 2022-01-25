@@ -193,7 +193,7 @@ Running and reviewing unit tests is a great way to get familiarized with this cl
 
 </details>
 
-## Contributors
+## Authors
 
 * [Ibrahim Ali](https://github.com/IbrahimAli2017)
 * [Muhammad Noamany](https://github.com/muhammadnomany25)

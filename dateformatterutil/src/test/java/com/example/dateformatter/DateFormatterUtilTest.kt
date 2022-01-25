@@ -54,15 +54,6 @@ class DateFormatterUtilTest {
 
     @Test
     fun convertDateToString_return_valid_String_when_passing_valid_param() {
-        val date1 = DateFormatterUtil.convertStringToDate(
-            "01.02.2022 01:32:27",
-            StandardDateParser.DD_MM_YYYY_HH_MM_SS
-        )!!
-        assertEquals(
-            DateFormatterUtil.convertDateToString(
-                date1, StandardDateParser.DD_MM_YYYY_HH_MM_SS
-            ), "01.02.2022 01:32:27"
-        )
         val date2  = DateFormatterUtil.convertStringToDate(
             "2001/07/04 - 12:08:56 AM",
             StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
@@ -72,20 +63,22 @@ class DateFormatterUtilTest {
                 date2, StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
             ), "2001/07/04 - 12:08:56 AM"
         )
+    }@Test
+    fun convertDateToString_return_invalid_String_when_passing_invalid_param() {
+        val date1 = DateFormatterUtil.convertStringToDate(
+            "01.013.2022 01:32:27",
+            StandardDateParser.DD_MM_YYYY_HH_MM_SS
+        )!!
+        assertNotEquals(
+            DateFormatterUtil.convertDateToString(
+                date1, StandardDateParser.DD_MM_YYYY_HH_MM_SS
+            ), "01.02.2022 01:32:27"
+        )
     }
 
     @Test
-    fun convertToHijriDate() {
+    fun convertToHijriDate_return_valid_result_when_passing_valid_params() {
 
-        val date1 = DateFormatterUtil.convertStringToDate(
-                "12.01.2022 01:32:27",
-                StandardDateParser.DD_MM_YYYY_HH_MM_SS
-            )!!
-        assertEquals(
-            DateFormatterUtil.convertToHijriDate(
-                date1
-            )?.dayOfMonth, LocalDate("1443-06-09").dayOfMonth
-        )
         val date2 =  DateFormatterUtil.convertStringToDate(
             "2022/01/12 - 12:08:56 AM",
             StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
@@ -113,10 +106,35 @@ class DateFormatterUtilTest {
                 date4
             )?.monthOfYear, LocalDate("1389-10-20").monthOfYear
         )
-    }
+    }  @Test
+    fun convertToHijriDate_return_invalid_result_when_passing_invalid_params() {
 
+        val date1 = DateFormatterUtil.convertStringToDate(
+            "12.14.2022 01:32:27",
+            StandardDateParser.DD_MM_YYYY_HH_MM_SS
+        )!!
+        assertNotEquals(
+            DateFormatterUtil.convertToHijriDate(
+                date1
+            )?.dayOfMonth, LocalDate("1443-06-09").dayOfMonth
+        )
+    }
     @Test
-    fun convertLocalDateTimeToStringDate() {
+    fun convertLocalDateTimeToStringDate_return_invalid_results_when_passing_invalid_params() {
+    val localDateTime1 = LocalDateTime.fromDateFields(
+        DateFormatterUtil.convertStringToDate(
+            "33 January",
+            StandardDateParser.DD_MMMM
+        )
+    )
+    assertNotEquals(
+    DateFormatterUtil.convert(
+    localDateTime1 ,  StandardDateParser.DD_MM_YYYY
+    ),
+    "12_01_1970"
+    )}
+    @Test
+    fun convertLocalDateTimeToStringDate_return_valid_results_when_passing_valid_params() {
         val localDateTime1 = LocalDateTime.fromDateFields(
             DateFormatterUtil.convertStringToDate(
                 "12 January",
@@ -156,7 +174,7 @@ class DateFormatterUtilTest {
     }
 
     @Test
-    fun convertHigriLocalDateToLocalDate() {
+    fun convertHigriLocalDateToLocalDate_return_valid_result_when_passing_valid_param() {
         //start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
         val date1 = DateFormatterUtil.convertStringToDate(
             "12:24",
@@ -180,22 +198,44 @@ class DateFormatterUtilTest {
 
     }
     @Test
-    fun compareDates() {
+    fun convertHigriLocalDateToLocalDate_return_invalid_result_when_passing_invalid_param() {
+        //start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
+        val date1 = DateFormatterUtil.convertStringToDate(
+            "26:24",
+            StandardDateParser.HH_MM
+        )
+        val hijri1 = DateFormatterUtil.convertToHijriDate(date1!!)
+        assertNotEquals(
+            LocalDate("1970-01-01").toDate(),
+            DateFormatterUtil.convertFromIslamic(hijri1!!)
+        )
+
+    }
+    @Test
+    fun compareDates_return_valid_result_when_passing_valid_params() {
 
         assertEquals(
             true,
             DateFormatterUtil.isFutureDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
         )
+    }
+    @Test
+    fun compareDates_return_invalid_result_when_passing_invalid_params() {
 
-        // java.lang.IllegalArgumentException
+        //add hijri instead of gregorian
+        assertNotEquals(
+            true,
+            DateFormatterUtil.isFutureDate("2034/07/04", "2022/01/14")
+        )
+
+         //java.lang.IllegalArgumentException
 //        assertEquals(
 //            true,
 //            DateFormatterUtil.isFutureDate("12:08", "01:12")
 //        )
     }
-
     @Test
-    fun getDatFromPmAmHoursMin() {
+    fun getDateFromPmAmHoursMin_return_valid_result_when_passing_valid_params() {
         assertEquals(
             "22:17 PM",
             DateFormatterUtil.getHoursMinFromTime("22:17")
@@ -205,11 +245,25 @@ class DateFormatterUtilTest {
             DateFormatterUtil.getHoursMinFromTime("02:17:00 AM")
         )
     }
-
     @Test
-    fun getCurrentDate() {
-        assertEquals("2022-01-24", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
+    fun getDateFromPmAmHoursMin_return_invalid_result_when_passing_invalid_params() {
+        assertNotEquals(
+            "22:17 PM",
+            DateFormatterUtil.getHoursMinFromTime("26:17")
+        )
+        assertNotEquals(
+            "02:17 AM",
+            DateFormatterUtil.getHoursMinFromTime("02:62:00 AM")
+        )
     }
 
+    @Test
+    fun getCurrentDate_return_valid_result_when_passing_valid_params() {
+        assertEquals("2022-01-25", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
+    }
 
+    @Test
+    fun getCurrentDate_return_invalid_result_when_passing_invalid_params() {
+        assertNotEquals("2022-01-26", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
+    }
 }

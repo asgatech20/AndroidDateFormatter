@@ -1,5 +1,6 @@
 package com.example.dateformatter
 
+import android.content.Context
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
@@ -13,11 +14,14 @@ import java.util.*
 
 class DateFormatterUtilTest {
 
-    @Before
-    fun init(){
-        DateTimeZone.setProvider(UTCProvider())
-    }
+    lateinit var calender: Calendar
 
+
+    @Before
+    fun init() {
+        DateTimeZone.setProvider(UTCProvider())
+        calender = Calendar.getInstance()
+    }
 
 
     @Test
@@ -27,7 +31,7 @@ class DateFormatterUtilTest {
             DateFormatterUtil.convertStringToDate(
                 "20 july",
                 StandardDateParser.DD_MMMM
-            )?.month!!+1, 7
+            )?.month!! + 1, 7
         )
         assertEquals(
             DateFormatterUtil.convertStringToDate(
@@ -40,113 +44,86 @@ class DateFormatterUtilTest {
             DateFormatterUtil.convertStringToDate(
                 "2001-07-04",
                 StandardDateParser.YYYY_MM_DD
-            )?.month!!+1,//The value returned is between 0 and 11, with the value 0 representing January
+            )?.month!! + 1,//The value returned is between 0 and 11, with the value 0 representing January
             7
         )
         assertEquals(
             DateFormatterUtil.convertStringToDate(
                 "2001/07/04 - 12:08:00 AM",
                 StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
-            )?.month!!+1,//The value returned is between 0 and 11, with the value 0 representing January
+            )?.month!! + 1,//The value returned is between 0 and 11, with the value 0 representing January
             7
         )
     }
 
     @Test
     fun convertDateToString_return_valid_String_when_passing_valid_param() {
-        val date2  = DateFormatterUtil.convertStringToDate(
-            "2001/07/04 - 12:08:56 AM",
-            StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
-        )!!
+        calender.set(2001, 7 - 1, 4, 12, 8, 56)
+        val date = calender.time
+
         assertEquals(
             DateFormatterUtil.convertDateToString(
-                date2, StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
-            ), "2001/07/04 - 12:08:56 AM"
+                date, StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
+            ), "2001/07/04 - 12:08:56 PM"
         )
-    }@Test
+    }
+
+    @Test
     fun convertDateToString_return_invalid_String_when_passing_invalid_param() {
-        val date1 = DateFormatterUtil.convertStringToDate(
-            "01.013.2022 01:32:27",
-            StandardDateParser.DD_MM_YYYY_HH_MM_SS
-        )!!
+        calender.set(2022, 12, 1, 1, 23, 27)
+        val date = calender.time
         assertNotEquals(
             DateFormatterUtil.convertDateToString(
-                date1, StandardDateParser.DD_MM_YYYY_HH_MM_SS
+                date, StandardDateParser.DD_MM_YYYY_HH_MM_SS
             ), "01.02.2022 01:32:27"
         )
     }
 
     @Test
     fun convertToHijriDate_return_valid_result_when_passing_valid_params() {
-
-        val date2 =  DateFormatterUtil.convertStringToDate(
-            "2022/01/12 - 12:08:56 AM",
-            StandardDateParser.YYYY_MM_DDTHH_MM_SS_A
-        )!!
+        //we type month-1 cause months is 0 based
+        calender.set(2022, 1 - 1, 12, 12, 8, 56)
+        val date = calender.time
         assertEquals(
             DateFormatterUtil.convertToHijriDate(
-                date2
+                date
             )?.dayOfMonth, LocalDate("1443-06-09").dayOfMonth
         )
-        val date3 =  DateFormatterUtil.convertStringToDate(
-            "20 January",//year by default 1970 == to 1389 in hijri
-            StandardDateParser.DD_MMMM
-        )!!
         assertEquals(
             DateFormatterUtil.convertToHijriDate(
-                date3
-            )?.monthOfYear, LocalDate("1389-10-20").monthOfYear+1
+                date
+            )?.monthOfYear, LocalDate("1443-06-09").monthOfYear
         )
-        val date4 =  DateFormatterUtil.convertStringToDate(
-            "12:45",//year by default 1970 == to 1389 in hijri
-            StandardDateParser.HH_MM
-        )!!
-        assertEquals(
-            DateFormatterUtil.convertToHijriDate(
-                date4
-            )?.monthOfYear, LocalDate("1389-10-20").monthOfYear
-        )
-    }  @Test
+    }
+
+    @Test
     fun convertToHijriDate_return_invalid_result_when_passing_invalid_params() {
 
-        val date1 = DateFormatterUtil.convertStringToDate(
-            "12.14.2022 01:32:27",
-            StandardDateParser.DD_MM_YYYY_HH_MM_SS
-        )!!
+        calender.set(2022, 14, 12, 1, 32, 27)
+        val date = calender.time
         assertNotEquals(
             DateFormatterUtil.convertToHijriDate(
-                date1
+                date
             )?.dayOfMonth, LocalDate("1443-06-09").dayOfMonth
         )
     }
+
     @Test
     fun convertLocalDateTimeToStringDate_return_invalid_results_when_passing_invalid_params() {
-    val localDateTime1 = LocalDateTime.fromDateFields(
-        DateFormatterUtil.convertStringToDate(
-            "33 January",
-            StandardDateParser.DD_MMMM
-        )
-    )
-    assertNotEquals(
-    DateFormatterUtil.convert(
-    localDateTime1 ,  StandardDateParser.DD_MM_YYYY
-    ),
-    "12_01_1970"
-    )}
-    @Test
-    fun convertLocalDateTimeToStringDate_return_valid_results_when_passing_valid_params() {
-        val localDateTime1 = LocalDateTime.fromDateFields(
-            DateFormatterUtil.convertStringToDate(
-                "12 January",
-                StandardDateParser.DD_MMMM
-            )
-        )
-        assertEquals(
+        calender.set(1970, 1, 12)
+        val date = calender.time
+        val localDateTime = LocalDateTime.fromDateFields(date)
+        assertNotEquals(
             DateFormatterUtil.convert(
-                localDateTime1 ,  StandardDateParser.DD_MM_YYYY
+                localDateTime, StandardDateParser.DD_MM_YYYY
             ),
             "12_01_1970"
         )
+    }
+
+    @Test
+    fun convertLocalDateTimeToStringDate_return_valid_results_when_passing_valid_params() {
+
         val localDateTime2 = LocalDateTime.fromDateFields(
             DateFormatterUtil.convertStringToDate(
                 "01:32",
@@ -155,7 +132,7 @@ class DateFormatterUtilTest {
         )
         assertEquals(
             DateFormatterUtil.convert(
-                localDateTime2 ,  StandardDateParser.DD_MM_YYYY
+                localDateTime2, StandardDateParser.DD_MM_YYYY
             ),
             "01_01_1970"
         )
@@ -167,7 +144,7 @@ class DateFormatterUtilTest {
         )
         assertEquals(
             DateFormatterUtil.convert(
-                localDateTime3,  StandardDateParser.DD_MM_YYYY
+                localDateTime3, StandardDateParser.DD_MM_YYYY
             ),
             "12_01_2022"
         )
@@ -197,6 +174,7 @@ class DateFormatterUtilTest {
         )
 
     }
+
     @Test
     fun convertHigriLocalDateToLocalDate_return_invalid_result_when_passing_invalid_param() {
         //start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
@@ -211,59 +189,43 @@ class DateFormatterUtilTest {
         )
 
     }
+
     @Test
     fun compareDates_return_valid_result_when_passing_valid_params() {
 
         assertEquals(
             true,
-            DateFormatterUtil.isFutureDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
+            DateFormatterUtil.isAfterDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
         )
     }
+
     @Test
     fun compareDates_return_invalid_result_when_passing_invalid_params() {
 
         //add hijri instead of gregorian
         assertNotEquals(
             true,
-            DateFormatterUtil.isFutureDate("2034/07/04", "2022/01/14")
+            DateFormatterUtil.isAfterDate("2034/07/04", "2022/01/14")
         )
 
-         //java.lang.IllegalArgumentException
+        //java.lang.IllegalArgumentException
 //        assertEquals(
 //            true,
 //            DateFormatterUtil.isFutureDate("12:08", "01:12")
 //        )
     }
-    @Test
-    fun getDateFromPmAmHoursMin_return_valid_result_when_passing_valid_params() {
-        assertEquals(
-            "22:17 PM",
-            DateFormatterUtil.getHoursMinFromTime("22:17")
-        )
-        assertEquals(
-            "02:17 AM",
-            DateFormatterUtil.getHoursMinFromTime("02:17:00 AM")
-        )
-    }
-    @Test
-    fun getDateFromPmAmHoursMin_return_invalid_result_when_passing_invalid_params() {
-        assertNotEquals(
-            "22:17 PM",
-            DateFormatterUtil.getHoursMinFromTime("26:17")
-        )
-        assertNotEquals(
-            "02:17 AM",
-            DateFormatterUtil.getHoursMinFromTime("02:62:00 AM")
-        )
-    }
+
 
     @Test
     fun getCurrentDate_return_valid_result_when_passing_valid_params() {
-        assertEquals("2022-01-25", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
+        assertEquals("2022-01-25", DateFormatterUtil.getCurrentDate(StandardDateParser.YYYY_MM_DD))
     }
 
     @Test
     fun getCurrentDate_return_invalid_result_when_passing_invalid_params() {
-        assertNotEquals("2022-01-26", DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD))
+        assertNotEquals(
+            "2022-01-26",
+            DateFormatterUtil.getCurrentDate(StandardDateParser.YYYY_MM_DD)
+        )
     }
 }

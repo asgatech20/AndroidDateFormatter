@@ -1,5 +1,7 @@
 package com.example.dateformatter
 
+import android.content.Context
+import android.provider.Settings.Global.getString
 import com.example.dateformatter.DateFormatterUtil.convertFromIslamic
 import org.joda.time.*
 import org.joda.time.chrono.GregorianChronology
@@ -143,36 +145,17 @@ object DateFormatterUtil {
      * @usage this function is used to check to-date is after from-date
      * @acceptedFormats all date or date-time formats in StandardDateParser enum class if you enter invalid value for entered pattern it will
      * throw exception or if you pass time only it will throw IllegalArgumentException
-     * @param fromDate A String containing the start date
-     * @param toDate A String containing the end date
+     * @param firstDate A String containing the start date
+     * @param secondDate A String containing the end date
      * @return A Boolean that indicates the end date is after start or not
      */
-    fun isFutureDate(fromDate: String, toDate: String): Boolean {
+    fun isAfterDate(firstDate: String, secondDate: String): Boolean {
         return try {
-            Date(toDate).after(Date(fromDate))
+            Date(secondDate).after(Date(firstDate))
         } catch (ex:IllegalArgumentException){
             ExceptionLogger.Error("check your input dates",ex)
             false
         }
-    }
-
-    /**
-     * @usage this function is used to split hours and min from time based on am and pm
-     * @acceptedFormat HH:MM:ss AM/PM
-     * @param time A String containing the date
-     * @return A String that contains hh:min am/pm
-     */
-    fun getHoursMinFromTime(time: String): String {
-        try {
-            val h1 = time.split(":".toRegex()).toTypedArray()
-            val hour = h1[0]
-            val minute = h1[1]
-            return if (hour.toInt() in 13..23 || time.contains("PM")) "$hour:$minute PM" else "$hour:$minute AM"
-        }catch (ex:ArrayIndexOutOfBoundsException){
-            ExceptionLogger.Error("invalid input , you should use HH:MM:ss AM/PM for example: 12:24",ex)
-        }
-
-        return ""
     }
 
     /**
@@ -181,7 +164,7 @@ object DateFormatterUtil {
      * @param dateParser A StandardDateParser enum class contain all valid date and time format
      * @return A String that represents the current date
      */
-    fun getCurrentData(dateParser: StandardDateParser): String {
+    fun getCurrentDate(dateParser: StandardDateParser): String {
         val c = Calendar.getInstance().time
         return dateParser.parser.format(c)
     }

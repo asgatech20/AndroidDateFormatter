@@ -3,7 +3,7 @@
 ## General Rule
      1- start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
      2- all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception
-     3- ###StandardDateParser 
+     3- **{StandardDateParser }**
            is enum class that contain all formates that you can use to parse and formate dates
 ## Usage
 

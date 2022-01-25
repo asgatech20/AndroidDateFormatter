@@ -122,12 +122,12 @@ val date = DateFormatterUtil.convertStringToDate(
 //=>  Wed Jan 12 00:00:00 EET 2022 
 ```
 
-### fun isFutureDate(fromDate: String, toDate: String): Boolean 
+### fun isAfterDate(firstDate: String, secondDate: String): Boolean 
     this function is used to check to-date is after from-date
  
 **Params**
-* `fromDate` **{String}** mandatory input
-* `toDate` **{String}** mandatory input
+* `firstDate` **{String}** mandatory input
+* `secondDate` **{String}** mandatory input
 * `returns` **{Boolean}**
 
 **Example**
@@ -135,11 +135,11 @@ val date = DateFormatterUtil.convertStringToDate(
 ```kt
 // here we compare between two dates if second date after first date or not
 
-     DateFormatterUtil.isFutureDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
+     DateFormatterUtil.isAfterDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
    
 //=>  true
        
-     DateFormatterUtil.isFutureDate("12:08", "01:12")
+     DateFormatterUtil.isAfterDate("12:08", "01:12")
      
 //=> java.lang.IllegalArgumentException as you you must pass datetime or date not time 
 
@@ -169,7 +169,7 @@ val date = DateFormatterUtil.convertStringToDate(
 
 
 
-### fun getCurrentData(dateParser: StandardDateParser): String 
+### fun getCurrentDate(dateParser: StandardDateParser): String 
     this function is used to get current date
  
 **Params**
@@ -180,7 +180,7 @@ val date = DateFormatterUtil.convertStringToDate(
 
 ```kt
     //here we get current date based on desired format you choose
-    DateFormatterUtil.getCurrentData(StandardDateParser.YYYY_MM_DD)
+    DateFormatterUtil.getCurrentDate(StandardDateParser.YYYY_MM_DD)
     //=>2022-01-24
 
 ```

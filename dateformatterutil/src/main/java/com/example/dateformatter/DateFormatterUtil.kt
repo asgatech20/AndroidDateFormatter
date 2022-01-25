@@ -149,9 +149,9 @@ object DateFormatterUtil {
      * @param secondDate A String containing the end date
      * @return A Boolean that indicates the end date is after start or not
      */
-    fun isAfterDate(firstDate: String, secondDate: String): Boolean {
+    fun isAfterDate(firstDate: String,firstDateParser: StandardDateParser, secondDate: String,secondDateParser: StandardDateParser): Boolean ?{
         return try {
-            Date(secondDate).after(Date(firstDate))
+            convertStringToDate(secondDate,secondDateParser)?.after(convertStringToDate(firstDate,firstDateParser))
         } catch (ex:IllegalArgumentException){
             ExceptionLogger.Error("check your input dates",ex)
             false

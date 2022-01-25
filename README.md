@@ -1,5 +1,5 @@
 # AndroidDateFormatter
-     this module is used to convert date object to string value with specific formate ,hijri-to-gregorian and vice versa and extract any part of date you need 
+     this module is used to convert date object to string value with specific formate and vice versa ,hijri-to-gregorian and vice versa and extract any part of date you need 
 ## General Rule
      1- start of calender : hijri-to-gregorian: 1389-10-23=>1970-01-01
      2- all formats in StandardDateParser enum class if you enter invalid value for entered pattern it will throw exception

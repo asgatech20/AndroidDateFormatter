@@ -195,7 +195,7 @@ class DateFormatterUtilTest {
 
         assertEquals(
             true,
-            DateFormatterUtil.isAfterDate("2001/07/04 - 12:08:56 AM", "2022/01/14")
+            DateFormatterUtil.isAfterDate("2001/07/04 - 12:08:56 AM",StandardDateParser.YYYY_MM_DDTHH_MM_SS_A, "2022-01-14",StandardDateParser.YYYY_MM_DD)
         )
     }
 
@@ -205,7 +205,7 @@ class DateFormatterUtilTest {
         //add hijri instead of gregorian
         assertNotEquals(
             true,
-            DateFormatterUtil.isAfterDate("2034/07/04", "2022/01/14")
+            DateFormatterUtil.isAfterDate("2034-07-04",StandardDateParser.YYYY_MM_DD, "2022-01-14",StandardDateParser.YYYY_MM_DD)
         )
 
         //java.lang.IllegalArgumentException

@@ -68,7 +68,6 @@ object DateFormatterUtil {
             return todayHijri
         } catch (ex: ParseException) {
             ExceptionLogger.Error(ex.localizedMessage,ex)
-            ""
         }
         return null
     }
